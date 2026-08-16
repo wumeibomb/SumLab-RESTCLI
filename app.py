@@ -45,17 +45,26 @@ def index():
 @app.route('/inventory', methods = ["GET", "POST"])
 #all items
 def fetch_inventory(args):
-    #MAKE [POST REQUEST]
     if request.method == "POST":
         data = request.get_json()
 
         post_product = {
-            "id": len(foodDB) + 1
-            "code": 
+            "id": len(foodDB) + 1,
+            "code": f"{args.barcode}",
+            'product': {
+                'product_name': f"{args.name}",
+                'ingredients': f"{args.ingredient}"
+            }
         }
+
+        foodDB.append(post_product)
+        output = {"data": post_product, "message": "PRODUCT ADDED"}
+        return jsonify(output), 201
+
     INVENTORY = {
         "data": foodDB
     }
+
     print(INVENTORY)
     return jsonify(INVENTORY), 200
 
@@ -81,7 +90,6 @@ def show_food(barcode):
             "name": product_test["product_name"],
             "ingredients": product_test["ingredients"][0]['text']
             }
-            #need to add a few more ingredients...
         }
 
         return jsonify({"message": "FOOD OUTPUT", "data": product_output}), 200
@@ -94,20 +102,18 @@ def show_food(barcode):
 def update_product(id,args):
     data = request.get_json()
 
-    data_Test = json.loads(data)
-
-    #if
+    #FIX THIS
     for each in foodDB:
         if each.id == id:
 
             update_inventory = {
                 'id': id,
+                'code': f"{args.barcode}",
                 'product': {
                 'product_name': f"{args.product_name}",
                 'ingredients': f"{args.ingredients}"
                 }
             }
-
 
     foodDB.append(update_inventory)
     output = {
@@ -118,12 +124,12 @@ def update_product(id,args):
 
 @app.route('/inventory/<int:id>', methods=["DELETE"])
 def delete_product(id):
-    
+
     for each in foodDB:
-            if each('id') == id:
-                return ("Deleted Event"), 204
-            else: 
-                return ("Event not found"), 404
+        if each('id') == id:
+            return ("Deleted Event"), 204
+        else: 
+            return ("Event not found"), 404
 
 
 
