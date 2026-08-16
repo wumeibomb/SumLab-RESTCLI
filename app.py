@@ -7,6 +7,7 @@ app = Flask(__name__)
 foodDB = [
     {
         'id': 1,
+        'code': 3017624010701,
         'product': {
         'product_name': "Nutella",
         'ingredients': "Sugar"
@@ -14,16 +15,18 @@ foodDB = [
     },
     {
         'id': 2,
+        'code': 3760049790672,
         'product': {
-        'product_name': "Lemonade",
-        'ingredients': "Lemon"
+        'product_name': "La Boulangerie viennoises",
+        'ingredients': "Flour"
         }
     },
     {
         'id': 3,
+        'code': 3284230001991,
         'product': {
-        'product_name': "Plantain chips",
-        'ingredients': "Plantain"
+        'product_name': "Brioche tressee pur beurre",
+        'ingredients': "Flour"
         }
     }
     
@@ -41,17 +44,25 @@ def index():
 
 @app.route('/inventory', methods = ["GET", "POST"])
 #all items
-def fetch_inventory():
+def fetch_inventory(args):
     #MAKE [POST REQUEST]
+    if request.method == "POST":
+        data = request.get_json()
+
+        post_product = {
+            "id": len(foodDB) + 1
+            "code": 
+        }
     INVENTORY = {
         "data": foodDB
     }
+    print(INVENTORY)
     return jsonify(INVENTORY), 200
 
 #specfic item:
 @app.route('/inventory/<int:barcode>', methods=["GET"])
-def show_food(args):
-    url = f"https://world.openfoodfacts.net/api/v2/product/{args.barcode}?fields=product_name,ingredients"
+def show_food(barcode):
+    url = f"https://world.openfoodfacts.net/api/v2/product/{barcode}?fields=product_name,ingredients"
     
     try:
         products = requests.get(url, timeout=5)
@@ -59,15 +70,17 @@ def show_food(args):
         products.raise_for_status()
 
         product_data = products.json()
-
+        
         product_test = product_data.get('product')
 
         id_test = 1
         product_output = {
             "id": id_test + 1,
             "code": product_data["code"],
+            "product": {
             "name": product_test["product_name"],
-            "ingredients": product_test["ingredients"][0]["text"]
+            "ingredients": product_test["ingredients"][0]['text']
+            }
             #need to add a few more ingredients...
         }
 
@@ -78,18 +91,23 @@ def show_food(args):
 
 
 @app.route('/inventory/<int:id>', methods=["PATCH"])
-def update_item(id):
+def update_product(id,args):
     data = request.get_json()
-    for each in data:
-        if each['id'] == id:
-            id_tes = int(id)
+
+    data_Test = json.loads(data)
+
+    #if
+    for each in foodDB:
+        if each.id == id:
+
             update_inventory = {
-                'id':  id_tes + 1,
+                'id': id,
                 'product': {
-                    'product_name': data['product_name'],
-                    'ingredients': data['ingredients']
-        }
-    }
+                'product_name': f"{args.product_name}",
+                'ingredients': f"{args.ingredients}"
+                }
+            }
+
 
     foodDB.append(update_inventory)
     output = {
@@ -99,19 +117,15 @@ def update_item(id):
     return jsonify(output), 200
 
 @app.route('/inventory/<int:id>', methods=["DELETE"])
-def delete_item():
-    pass
+def delete_product(id):
+    
+    for each in foodDB:
+            if each('id') == id:
+                return ("Deleted Event"), 204
+            else: 
+                return ("Event not found"), 404
+
 
 
 if __name__ == "__main__":
     app.run(port = 5000, debug= True)
-
-def main():
-    parser = argparse.ArgumentParser(description="REST API SUMLAB CLI...")
-    subparsers = parser.add_subparsers()
-    fetch_parser = subparsers.add_parser("Inventory")
-    fetch_parser.set_defaults(func=fetch_inventory) #view inventory
-#show food from barcode  -   update certain item  -  delete_item  -  add to inventory
-    
-    food_parser = subparsers.add_parser("FOODTEST")
-    food_parser.add_argument('barcode')
