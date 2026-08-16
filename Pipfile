@@ -5,7 +5,8 @@ name = "pypi"
 
 [packages]
 flask = "*"
-render_template = "*"
+requests = "*"
+
 
 [dev-packages]
 
