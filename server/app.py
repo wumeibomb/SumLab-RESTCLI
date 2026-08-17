@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request, render_template
-import requests, argparse, json
+import requests, argparse, json, click
 
 
 app = Flask(__name__)
@@ -42,6 +42,7 @@ def index():
 #get methid for the api BARCODE OR NAME
 #display all and display one
 
+@app.cli.command("inventory")
 @app.route('/inventory', methods = ["GET", "POST"])
 #all items
 def fetch_inventory():
@@ -70,6 +71,8 @@ def fetch_inventory():
     return jsonify(INVENTORY), 200
 
 #specfic item:
+@app.cli.command("food")
+@click.argument("barcode") #test: 3284230001991
 @app.route('/inventory/<int:barcode>', methods=["GET"])
 def show_food(barcode):
     url = f"https://world.openfoodfacts.net/api/v2/product/{barcode}?fields=product_name,ingredients"
@@ -88,17 +91,20 @@ def show_food(barcode):
             "id": id_test + 1,
             "code": product_data["code"],
             "product": {
-            "name": product_test["product_name"],
+            "product_name": product_test["product_name"],
             "ingredients": product_test["ingredients"][0]['text']
             }
         }
 
+        print(product_output["product"]["product_name"])
         return jsonify({"message": "FOOD OUTPUT", "data": product_output}), 200
     except requests.exceptions.HTTPError as http_error:
         return jsonify({ "error" : http_error})
+    
     #get request for product name via barcode
 
-
+@app.cli.command("update")
+@click.argument("id")
 @app.route('/inventory/<int:id>', methods=["PATCH"])
 def update_product(id):
     data = request.get_json()
@@ -120,11 +126,13 @@ def update_product(id):
             foodDB.append(update_inventory)
     output = {
         'message': "SUCCESSFUL...",
-        'data': foodDB
+        'data': foodDB #umm...
     }
     print(output)
     return jsonify(output), 200
 
+@app.cli.command("delete")
+@click.argument("id")
 @app.route('/inventory/<int:id>', methods=["DELETE"])
 def delete_product(id):
 
@@ -139,6 +147,7 @@ def delete_product(id):
 def main():
     parser = argparse.ArgumentParser(description="REST API SUMLAB CLI...")
     subparsers = parser.add_subparsers()
+
     fetch_parser = subparsers.add_parser("Inventory", help= "List the inventory products")
     #fetch_parser.add_argument("Inventory")
     fetch_parser.set_defaults(func=fetch_inventory) #view inventory
@@ -166,3 +175,5 @@ def main():
 
 if __name__ == "__main__":
     app.run(port = 5000, debug= True)
+
+    #FIRST RUN PIPENV SHELL THEN YOU WILL BE ABLE TO ACCESS THE PYTHON APP.PY LINK
