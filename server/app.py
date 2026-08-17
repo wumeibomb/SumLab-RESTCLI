@@ -44,16 +44,18 @@ def index():
 
 @app.route('/inventory', methods = ["GET", "POST"])
 #all items
-def fetch_inventory(args):
+def fetch_inventory():
     if request.method == "POST":
         data = request.get_json()
 
+        data_within = data['product']
+
         post_product = {
             "id": len(foodDB) + 1,
-            "code": f"{args.barcode}",
-            'product': {
-                'product_name': f"{args.name}",
-                'ingredients': f"{args.ingredient}"
+            "code": data['code'],
+            "product": {
+                "product_name": data_within['product_name'],
+                "ingredients": data_within['ingredients']
             }
         }
 
@@ -64,7 +66,6 @@ def fetch_inventory(args):
     INVENTORY = {
         "data": foodDB
     }
-
     print(INVENTORY)
     return jsonify(INVENTORY), 200
 
@@ -99,37 +100,40 @@ def show_food(barcode):
 
 
 @app.route('/inventory/<int:id>', methods=["PATCH"])
-def update_product(id,args):
+def update_product(id):
     data = request.get_json()
 
     #FIX THIS
     for each in foodDB:
-        if each.id == id:
+        data_test = each['id']
+        if data_test == id:
 
             update_inventory = {
                 'id': id,
-                'code': f"{args.barcode}",
+                'code': data['code'],
                 'product': {
-                'product_name': f"{args.product_name}",
-                'ingredients': f"{args.ingredients}"
+                'product_name': data['product_name'],
+                'ingredients': data['ingredients']
                 }
             }
 
-    foodDB.append(update_inventory)
+            foodDB.append(update_inventory)
     output = {
         'message': "SUCCESSFUL...",
         'data': foodDB
     }
+    print(output)
     return jsonify(output), 200
 
 @app.route('/inventory/<int:id>', methods=["DELETE"])
 def delete_product(id):
 
     for each in foodDB:
-        if each('id') == id:
-            return ("Deleted Event"), 204
+        data = each['id']
+        if data == id:
+            return ("Product Deleted"), 204
         else: 
-            return ("Event not found"), 404
+            return ("Product id Not found"), 404
 
 
 def main():
@@ -140,12 +144,18 @@ def main():
     fetch_parser.set_defaults(func=fetch_inventory) #view inventory
 #show food from barcode  -   update certain item  -  delete_item  -  add to inventory
     
-    food_parser = subparsers.add_parser("FOODTEST", help= "Add food barcode to get info")
+    food_parser = subparsers.add_parser("FOOD", help= "Add food barcode to get info")
     food_parser.add_argument('barcode')
+    food_parser.set_defaults(func=show_food)
 
     update_parser = subparsers.add_parser("Update")
     update_parser.add_argument('product_name')
     update_parser.add_argument('ingredients')
+    update_parser.set_defaults(func=update_product)
+
+    delete_parser = subparsers.add_parser("Delete")
+    delete_parser.add_argument('id')
+    delete_parser.set_defaults(func=delete_parser)
     
 
     args = parser.parse_args()
