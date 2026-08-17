@@ -148,12 +148,12 @@ def main():
     food_parser.add_argument('barcode')
     food_parser.set_defaults(func=show_food)
 
-    update_parser = subparsers.add_parser("Update")
+    update_parser = subparsers.add_parser("Update", help= "Update product data via id")
     update_parser.add_argument('product_name')
     update_parser.add_argument('ingredients')
     update_parser.set_defaults(func=update_product)
 
-    delete_parser = subparsers.add_parser("Delete")
+    delete_parser = subparsers.add_parser("Delete", help= "Deletes specified product data via id")
     delete_parser.add_argument('id')
     delete_parser.set_defaults(func=delete_parser)
     
