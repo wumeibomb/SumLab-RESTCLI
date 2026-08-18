@@ -1,0 +1,36 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "code": 3017624010701,
+      "product": {
+        "product_name": "Nutella",
+        "ingredients": "Sugar"
+      }
+    },
+    {
+      "id": 2,
+      "code": 3760049790672,
+      "product": {
+        "product_name": "La Boulangerie viennoises",
+        "ingredients": "Flour"
+      }
+    },
+    {
+      "id": 3,
+      "code": 3284230001991,
+      "product": {
+        "product_name": "Brioche tressee pur beurre",
+        "ingredients": "Flour"
+      }
+    },
+    {
+      "id": 17,
+      "code": 4335619005143,
+      "product": {
+        "product_name": "3 in 1 Bwdjnkw",
+        "ingredients": "Coffee"
+      }
+    }
+  ]
+}

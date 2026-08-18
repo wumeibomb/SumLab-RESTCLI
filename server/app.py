@@ -4,7 +4,8 @@ import requests, argparse, json, click
 
 app = Flask(__name__)
 
-foodDB = [
+foodDB = "server/main.json"
+flop  = [
     {
         'id': 1,
         'code': 3017624010701,
@@ -31,6 +32,15 @@ foodDB = [
     }
     
 ]
+#wait i lowkey don't think i understand how classes work...
+class food:
+
+    def __init__(self, id, code, product_name, ingredients):
+        self.id = id
+        self.code = code
+        self.product_name = product_name
+        self.ingredients = ingredients
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -49,25 +59,35 @@ def fetch_inventory():
     if request.method == "POST":
         data = request.get_json()
 
-        data_within = data['product']
+        data_within = data["product"]
 
         post_product = {
             "id": len(foodDB) + 1,
-            "code": data['code'],
+            "code": data["code"],
             "product": {
-                "product_name": data_within['product_name'],
-                "ingredients": data_within['ingredients']
+                "product_name": data_within["product_name"],
+                "ingredients": data_within["ingredients"]
             }
         }
 
-        foodDB.append(post_product)
-        output = {"data": post_product, "message": "PRODUCT ADDED"}
+        with open(foodDB, "r+") as file:
+            fooddata = json.load(file)
+
+            fooddata["data"].append(post_product)
+            file.seek(0)
+            json.dump(fooddata, file, indent= 2)
+
+        output = {"message": "PRODUCT ADDED"}
+
         return jsonify(output), 201
 
-    INVENTORY = {
-        "data": foodDB
-    }
+    with open(foodDB, "r+") as file:
+        floptest = json.load(file)
+        INVENTORY = {
+            "data": floptest
+        }
     print(INVENTORY)
+    fetch_inventory(food)
     return jsonify(INVENTORY), 200
 
 #specfic item:
@@ -129,6 +149,7 @@ def update_product(id):
         'data': foodDB #umm...
     }
     print(output)
+    update_product(food)
     return jsonify(output), 200
 
 @app.cli.command("delete")
@@ -143,7 +164,7 @@ def delete_product(id):
         else: 
             return ("Product id Not found"), 404
 
-
+#Im pretty sure I don't need this type of cli...
 def main():
     parser = argparse.ArgumentParser(description="REST API SUMLAB CLI...")
     subparsers = parser.add_subparsers()
