@@ -4,7 +4,7 @@ import requests, argparse, json, click
 
 app = Flask(__name__)
 
-foodDB = "server/main.json"
+foodDB = "main.json"
 flop  = [
     {
         'id': 1,
@@ -32,6 +32,7 @@ flop  = [
     }
     
 ]
+
 #wait i lowkey don't think i understand how classes work...
 class food:
 
@@ -43,7 +44,7 @@ class food:
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template("index.html")
 
 #addd approute for the api with a get request and a post request
 #cli for the API
@@ -78,7 +79,7 @@ def fetch_inventory():
             json.dump(fooddata, file, indent= 2)
 
         output = {"message": "PRODUCT ADDED"}
-
+        fetch_inventory(food)
         return jsonify(output), 201
 
     with open(foodDB, "r+") as file:
@@ -87,7 +88,7 @@ def fetch_inventory():
             "data": floptest
         }
     print(INVENTORY)
-    fetch_inventory(food)
+    
     return jsonify(INVENTORY), 200
 
 #specfic item:
@@ -106,9 +107,8 @@ def show_food(barcode):
         
         product_test = product_data.get('product')
 
-        id_test = 1
         product_output = {
-            "id": id_test + 1,
+            "id": len(foodDB) + 1,
             "code": product_data["code"],
             "product": {
             "product_name": product_test["product_name"],
@@ -118,8 +118,9 @@ def show_food(barcode):
 
         print(product_output["product"]["product_name"])
         return jsonify({"message": "FOOD OUTPUT", "data": product_output}), 200
+    
     except requests.exceptions.HTTPError as http_error:
-        return jsonify({ "error" : http_error})
+        return jsonify({ "error" : http_error, "message": "Information likely not available."})
     
     #get request for product name via barcode
 
@@ -130,26 +131,31 @@ def update_product(id):
     data = request.get_json()
 
     #FIX THIS
-    for each in foodDB:
-        data_test = each['id']
-        if data_test == id:
+    with open(foodDB, "r+") as file:
+        fooddata = json.load(file)
+    
+        for eachid in fooddata["data"]:
+            data_test = eachid["id"]
 
-            update_inventory = {
+            data_within = data["product"]
+            if data_test == id:
+
+                update_inventory = {
                 'id': id,
                 'code': data['code'],
                 'product': {
-                'product_name': data['product_name'],
-                'ingredients': data['ingredients']
+                'product_name': data_within['product_name'],
+                'ingredients': data_within['ingredients']
                 }
             }
 
-            foodDB.append(update_inventory)
-    output = {
+                fooddata.update(update_inventory)
+        final_test = json.dumps(fooddata)
+        output = {
         'message': "SUCCESSFUL...",
-        'data': foodDB #umm...
-    }
+         #umm...
+        }
     print(output)
-    update_product(food)
     return jsonify(output), 200
 
 @app.cli.command("delete")
